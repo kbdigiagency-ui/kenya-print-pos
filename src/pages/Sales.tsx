@@ -261,13 +261,48 @@ const Sales = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Sale Details",
+                            description: `Viewing details for sale ${sale.id}`,
+                          });
+                        }}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      {sale.status === "pending" && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            const updatedSales = sales.map(s => 
+                              s.id === sale.id ? { ...s, status: "completed" as const } : s
+                            );
+                            setSales(updatedSales);
+                            toast({
+                              title: "Sale Completed",
+                              description: `Sale ${sale.id} marked as completed`,
+                            });
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setSales(sales.filter(s => s.id !== sale.id));
+                          toast({
+                            title: "Sale Deleted",
+                            description: `Sale ${sale.id} has been deleted successfully`,
+                          });
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

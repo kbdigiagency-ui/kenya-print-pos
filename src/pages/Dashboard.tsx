@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Users, Package, Receipt, DollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Today's Sales",
@@ -123,19 +125,31 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer">
+              <div 
+                className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer"
+                onClick={() => navigate('/sales')}
+              >
                 <Receipt className="h-6 w-6 text-primary mx-auto mb-2" />
                 <p className="text-sm font-medium">New Sale</p>
               </div>
-              <div className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer">
+              <div 
+                className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer"
+                onClick={() => navigate('/clients')}
+              >
                 <Users className="h-6 w-6 text-primary mx-auto mb-2" />
                 <p className="text-sm font-medium">Add Client</p>
               </div>
-              <div className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer">
+              <div 
+                className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer"
+                onClick={() => navigate('/invoices')}
+              >
                 <Package className="h-6 w-6 text-primary mx-auto mb-2" />
                 <p className="text-sm font-medium">New Quotation</p>
               </div>
-              <div className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer">
+              <div 
+                className="p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors cursor-pointer"
+                onClick={() => navigate('/expenses')}
+              >
                 <DollarSign className="h-6 w-6 text-primary mx-auto mb-2" />
                 <p className="text-sm font-medium">Add Expense</p>
               </div>

@@ -407,13 +407,42 @@ const Suppliers = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Supplier Details",
+                            description: `Viewing full profile for ${supplier.name}`,
+                          });
+                        }}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Edit Supplier",
+                            description: `Edit functionality for ${supplier.name} - Feature coming soon`,
+                          });
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setSuppliers(suppliers.filter(s => s.id !== supplier.id));
+                          toast({
+                            title: "Supplier Deleted",
+                            description: `${supplier.name} has been removed from your supplier database`,
+                          });
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

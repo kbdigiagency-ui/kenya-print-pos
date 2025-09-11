@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { TrendingUp, TrendingDown, Download, Calendar, DollarSign, Users, Package, FileText, Printer } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+  const { toast } = useToast();
 
   // Sample data for charts
   const salesData = [
@@ -85,7 +87,12 @@ const Reports = () => {
             </SelectContent>
           </Select>
           
-          <Button>
+          <Button onClick={() => {
+            toast({
+              title: "Report Export Started",
+              description: `Exporting ${selectedPeriod} report. You'll receive an email when ready.`,
+            });
+          }}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>

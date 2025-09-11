@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, CreditCard, Search, TrendingDown, Calendar } from "lucide-react";
+import { Plus, CreditCard, Search, TrendingDown, Calendar, Eye, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Expense {
@@ -278,14 +278,15 @@ const Expenses = () => {
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Amount (KES)</TableHead>
-                  <TableHead>Payment</TableHead>
-                </TableRow>
+                 <TableRow>
+                   <TableHead>Date</TableHead>
+                   <TableHead>Category</TableHead>
+                   <TableHead>Description</TableHead>
+                   <TableHead>Supplier</TableHead>
+                   <TableHead>Amount (KES)</TableHead>
+                   <TableHead>Payment</TableHead>
+                   <TableHead>Actions</TableHead>
+                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredExpenses.map((expense) => (
@@ -299,9 +300,51 @@ const Expenses = () => {
                     <TableCell className="font-medium">{expense.description}</TableCell>
                     <TableCell>{expense.supplier || "-"}</TableCell>
                     <TableCell className="font-bold text-expense">KES {expense.amount.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">{expense.paymentMethod}</span>
-                    </TableCell>
+                   <TableCell>
+                     <span className="text-sm text-muted-foreground">{expense.paymentMethod}</span>
+                   </TableCell>
+                   <TableCell>
+                     <div className="flex items-center gap-2">
+                       <Button 
+                         variant="ghost" 
+                         size="sm"
+                         onClick={() => {
+                           toast({
+                             title: "Expense Details",
+                             description: `Viewing details for expense ${expense.id}`,
+                           });
+                         }}
+                       >
+                         <Eye className="h-4 w-4" />
+                       </Button>
+                       <Button 
+                         variant="ghost" 
+                         size="sm"
+                         onClick={() => {
+                           toast({
+                             title: "Edit Expense",
+                             description: `Edit functionality for expense ${expense.id} - Feature coming soon`,
+                           });
+                         }}
+                       >
+                         <Edit className="h-4 w-4" />
+                       </Button>
+                       <Button 
+                         variant="ghost" 
+                         size="sm" 
+                         className="text-destructive hover:text-destructive"
+                         onClick={() => {
+                           setExpenses(expenses.filter(e => e.id !== expense.id));
+                           toast({
+                             title: "Expense Deleted",
+                             description: `Expense ${expense.id} has been deleted successfully`,
+                           });
+                         }}
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                     </div>
+                   </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

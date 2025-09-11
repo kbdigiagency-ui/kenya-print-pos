@@ -395,13 +395,42 @@ const Clients = () => {
                       <TableCell>{client.lastOrder || "No orders"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Client Details",
+                                description: `Viewing full profile for ${client.name}`,
+                              });
+                            }}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Edit Client",
+                                description: `Edit functionality for ${client.name} - Feature coming soon`,
+                              });
+                            }}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => {
+                              setClients(clients.filter(c => c.id !== client.id));
+                              toast({
+                                title: "Client Deleted",
+                                description: `${client.name} has been removed from your client database`,
+                              });
+                            }}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

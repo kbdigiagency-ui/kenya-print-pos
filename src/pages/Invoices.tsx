@@ -498,13 +498,44 @@ const Invoices = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Document Preview",
+                                description: `Viewing ${doc.type} ${doc.id} for ${doc.clientName}`,
+                              });
+                            }}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Download Started",
+                                description: `Downloading ${doc.type} ${doc.id} as PDF`,
+                              });
+                            }}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              const updatedDocs = documents.map(d => 
+                                d.id === doc.id ? { ...d, status: "sent" as const } : d
+                              );
+                              setDocuments(updatedDocs);
+                              toast({
+                                title: "Email Sent",
+                                description: `${doc.type} ${doc.id} sent to ${doc.clientEmail}`,
+                              });
+                            }}
+                          >
                             <Send className="h-4 w-4" />
                           </Button>
                           {doc.type === "quotation" && (
@@ -512,7 +543,25 @@ const Invoices = () => {
                               <ArrowRight className="h-4 w-4" />
                             </Button>
                           )}
-                          {doc.type === "invoice" && (
+                          {doc.type === "invoice" && doc.status !== "paid" && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => {
+                                const updatedDocs = documents.map(d => 
+                                  d.id === doc.id ? { ...d, status: "paid" as const } : d
+                                );
+                                setDocuments(updatedDocs);
+                                toast({
+                                  title: "Payment Recorded",
+                                  description: `Invoice ${doc.id} marked as paid`,
+                                });
+                              }}
+                            >
+                              <Receipt className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {doc.type === "invoice" && doc.status === "paid" && (
                             <Button variant="ghost" size="sm" onClick={() => convertDocument(doc, "receipt")}>
                               <Receipt className="h-4 w-4" />
                             </Button>
