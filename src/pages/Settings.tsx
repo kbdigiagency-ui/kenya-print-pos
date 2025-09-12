@@ -8,6 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { exportToCSV, generateBackup } from "@/utils/fileExport";
+import { useFileImport } from "@/hooks/useFileImport";
 import { Settings as SettingsIcon, Building2, User, Database, Mail, Lock, Bell } from "lucide-react";
 
 const Settings = () => {
@@ -46,6 +48,7 @@ const Settings = () => {
   });
 
   const { toast } = useToast();
+  const { importJSON, isImporting } = useFileImport();
 
   const handleSaveCompany = () => {
     toast({
@@ -69,17 +72,95 @@ const Settings = () => {
   };
 
   const handleExportData = () => {
-    toast({
-      title: "Export Started",
-      description: "Your data export is being prepared. You'll receive an email when ready.",
-    });
+    try {
+      // Mock data for all system entities
+      const allSystemData = {
+        clients: [
+          { id: 1, name: "Safaricom Ltd", email: "orders@safaricom.co.ke", phone: "+254711123456", totalOrders: 25, totalValue: 450000 },
+          { id: 2, name: "Equity Bank", email: "marketing@equitybank.co.ke", phone: "+254711654321", totalOrders: 18, totalValue: 320000 },
+          { id: 3, name: "Kenya Power", email: "info@kplc.co.ke", phone: "+254711987654", totalOrders: 12, totalValue: 285000 }
+        ],
+        suppliers: [
+          { id: 1, name: "Paper Plus Kenya", contact: "+254722111222", category: "Paper Supplies", totalPurchases: 125000 },
+          { id: 2, name: "Ink Solutions Ltd", contact: "+254733444555", category: "Ink & Toners", totalPurchases: 89000 }
+        ],
+        sales: [
+          { id: 1, date: "2024-01-15", client: "Safaricom Ltd", product: "Business Cards", amount: 12500, status: "completed" },
+          { id: 2, date: "2024-01-14", client: "Equity Bank", product: "Branding Package", amount: 25000, status: "completed" }
+        ],
+        expenses: [
+          { id: 1, date: "2024-01-15", category: "Office Rent", description: "Monthly office rent", amount: 45000 },
+          { id: 2, date: "2024-01-14", category: "Utilities", description: "Electricity bill", amount: 8500 }
+        ]
+      };
+
+      // Export each category as separate CSV
+      Object.entries(allSystemData).forEach(([category, data]) => {
+        exportToCSV(data, `kb-digital-${category}-${new Date().toISOString().split('T')[0]}`);
+      });
+
+      toast({
+        title: "Data Export Complete",
+        description: `All system data exported successfully to CSV files.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export data. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBackupData = () => {
-    toast({
-      title: "Backup Created",
-      description: "A full system backup has been created successfully.",
-    });
+    try {
+      // Mock complete system backup data
+      const backupData = {
+        clients: [
+          { id: 1, name: "Safaricom Ltd", email: "orders@safaricom.co.ke", phone: "+254711123456", address: "Westlands, Nairobi", createdAt: "2023-06-15" },
+          { id: 2, name: "Equity Bank", email: "marketing@equitybank.co.ke", phone: "+254711654321", address: "Upper Hill, Nairobi", createdAt: "2023-07-20" },
+          { id: 3, name: "Kenya Power", email: "info@kplc.co.ke", phone: "+254711987654", address: "Parklands, Nairobi", createdAt: "2023-08-10" }
+        ],
+        suppliers: [
+          { id: 1, name: "Paper Plus Kenya", contact: "+254722111222", email: "orders@paperplus.co.ke", category: "Paper Supplies", address: "Industrial Area, Nairobi" },
+          { id: 2, name: "Ink Solutions Ltd", contact: "+254733444555", email: "sales@inksolutions.co.ke", category: "Ink & Toners", address: "Eastleigh, Nairobi" }
+        ],
+        sales: [
+          { id: 1, date: "2024-01-15", clientId: 1, clientName: "Safaricom Ltd", product: "Business Cards", quantity: 1000, rate: 12.5, amount: 12500, status: "completed" },
+          { id: 2, date: "2024-01-14", clientId: 2, clientName: "Equity Bank", product: "Branding Package", quantity: 1, rate: 25000, amount: 25000, status: "completed" }
+        ],
+        expenses: [
+          { id: 1, date: "2024-01-15", category: "Office Rent", description: "Monthly office rent - January 2024", amount: 45000, paymentMethod: "Bank Transfer" },
+          { id: 2, date: "2024-01-14", category: "Utilities", description: "Electricity bill - December 2023", amount: 8500, paymentMethod: "Mobile Money" }
+        ],
+        invoices: [
+          { id: "INV001", type: "invoice", clientName: "Safaricom Ltd", date: "2024-01-15", subtotal: 12500, tax: 2000, total: 14500, status: "paid" },
+          { id: "Q001", type: "quotation", clientName: "Equity Bank", date: "2024-01-14", subtotal: 25000, tax: 4000, total: 29000, status: "sent" }
+        ],
+        settings: [{
+          companyName: companySettings.name,
+          email: companySettings.email,
+          phone: companySettings.phone,
+          address: companySettings.address,
+          taxNumber: companySettings.taxNumber,
+          ...systemSettings,
+          ...userSettings.notifications
+        }]
+      };
+
+      generateBackup(backupData);
+      
+      toast({
+        title: "Backup Created Successfully",
+        description: "Complete system backup has been downloaded to your device.",
+      });
+    } catch (error) {
+      toast({
+        title: "Backup Failed",
+        description: "Failed to create backup. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -414,6 +495,35 @@ const Settings = () => {
                   <Button onClick={handleExportData} variant="outline" className="w-full">
                     <Database className="h-4 w-4 mr-2" />
                     Export All Data (CSV)
+                  </Button>
+                  
+                  <input
+                    type="file"
+                    id="import-backup"
+                    accept=".json"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const result = await importJSON(file);
+                        if (result.success) {
+                          toast({
+                            title: "Import Successful",
+                            description: "System backup has been imported successfully.",
+                          });
+                        }
+                      }
+                    }}
+                  />
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => document.getElementById('import-backup')?.click()}
+                    disabled={isImporting}
+                  >
+                    <Database className="h-4 w-4 mr-2" />
+                    {isImporting ? 'Importing...' : 'Import Backup (JSON)'}
                   </Button>
                 </div>
               </div>

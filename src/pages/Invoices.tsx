@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, FileText, Eye, Download, Send, Search, Calculator, Receipt, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportToPDF, generateInvoicePDF, exportToCSV } from "@/utils/fileExport";
 
 interface InvoiceItem {
   description: string;
@@ -514,10 +515,20 @@ const Invoices = () => {
                             variant="ghost" 
                             size="sm"
                             onClick={() => {
-                              toast({
-                                title: "Download Started",
-                                description: `Downloading ${doc.type} ${doc.id} as PDF`,
-                              });
+                              try {
+                                const pdfContent = generateInvoicePDF(doc);
+                                exportToPDF(pdfContent, `${doc.type}-${doc.id}`);
+                                toast({
+                                  title: "Download Complete",
+                                  description: `${doc.type} ${doc.id} downloaded as PDF`,
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Download Failed",
+                                  description: "Failed to generate PDF. Please try again.",
+                                  variant: "destructive",
+                                });
+                              }
                             }}
                           >
                             <Download className="h-4 w-4" />
@@ -574,6 +585,106 @@ const Invoices = () => {
               </Table>
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Export All Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Export & Import</CardTitle>
+          <CardDescription>Bulk export and import document data</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                try {
+                  const csvData = documents.map(doc => ({
+                    ID: doc.id,
+                    Type: doc.type,
+                    Client: doc.clientName,
+                    Email: doc.clientEmail,
+                    Date: doc.date,
+                    DueDate: doc.dueDate || '',
+                    Subtotal: doc.subtotal,
+                    Tax: doc.tax,
+                    Total: doc.total,
+                    Status: doc.status,
+                    Notes: doc.notes || ''
+                  }));
+                  exportToCSV(csvData, 'all-documents');
+                  toast({
+                    title: "Export Complete",
+                    description: `Exported ${documents.length} documents to CSV`,
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Export Failed",
+                    description: "Failed to export documents. Please try again.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export All Documents (CSV)
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                try {
+                  // Create summary report
+                  const summary = {
+                    totalDocuments: documents.length,
+                    quotations: documents.filter(d => d.type === 'quotation').length,
+                    invoices: documents.filter(d => d.type === 'invoice').length,
+                    receipts: documents.filter(d => d.type === 'receipt').length,
+                    totalValue: documents.reduce((sum, doc) => sum + doc.total, 0),
+                    paidAmount: documents.filter(d => d.status === 'paid').reduce((sum, doc) => sum + doc.total, 0),
+                    pendingAmount: documents.filter(d => d.status === 'sent' || d.status === 'draft').reduce((sum, doc) => sum + doc.total, 0)
+                  };
+                  
+                  const summaryContent = `
+                    <div class="header">
+                      <div class="company-name">KB Digital Agency LTD</div>
+                      <div class="document-title">Document Summary Report</div>
+                      <p>Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div style="margin: 30px 0;">
+                      <h2>Overview</h2>
+                      <table>
+                        <tr><td><strong>Total Documents:</strong></td><td>${summary.totalDocuments}</td></tr>
+                        <tr><td><strong>Quotations:</strong></td><td>${summary.quotations}</td></tr>
+                        <tr><td><strong>Invoices:</strong></td><td>${summary.invoices}</td></tr>
+                        <tr><td><strong>Receipts:</strong></td><td>${summary.receipts}</td></tr>
+                        <tr><td><strong>Total Value:</strong></td><td>KES ${summary.totalValue.toLocaleString()}</td></tr>
+                        <tr><td><strong>Paid Amount:</strong></td><td>KES ${summary.paidAmount.toLocaleString()}</td></tr>
+                        <tr><td><strong>Pending Amount:</strong></td><td>KES ${summary.pendingAmount.toLocaleString()}</td></tr>
+                      </table>
+                    </div>
+                  `;
+                  
+                  exportToPDF(summaryContent, 'document-summary-report');
+                  toast({
+                    title: "Summary Report Generated",
+                    description: "Document summary report has been downloaded",
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Export Failed",
+                    description: "Failed to generate summary report. Please try again.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Generate Summary Report (PDF)
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

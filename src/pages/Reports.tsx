@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { TrendingUp, TrendingDown, Download, Calendar, DollarSign, Users, Package, FileText, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportToCSV, exportToPDF, generateReportPDF } from "@/utils/fileExport";
 
 const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
@@ -88,10 +89,31 @@ const Reports = () => {
           </Select>
           
           <Button onClick={() => {
-            toast({
-              title: "Report Export Started",
-              description: `Exporting ${selectedPeriod} report. You'll receive an email when ready.`,
-            });
+            try {
+              const reportData = {
+                stats: [
+                  { title: "Total Revenue", value: `KES ${totalSales.toLocaleString()}`, change: "+12.5%", description: "vs last period", trend: "up" },
+                  { title: "Total Expenses", value: `KES ${totalExpenses.toLocaleString()}`, change: "+8.2%", description: "vs last period", trend: "up" },
+                  { title: "Net Profit", value: `KES ${totalProfit.toLocaleString()}`, change: "+18.3%", description: "vs last period", trend: "up" },
+                  { title: "Profit Margin", value: `${profitMargin}%`, change: "+2.1%", description: "vs last period", trend: "up" }
+                ],
+                period: selectedPeriod
+              };
+              
+              const pdfContent = generateReportPDF(reportData, "Financial");
+              exportToPDF(pdfContent, `KB-Digital-Report-${selectedPeriod}-${new Date().toISOString().split('T')[0]}`);
+              
+              toast({
+                title: "Report Export Complete",
+                description: `${selectedPeriod} report has been generated and downloaded.`,
+              });
+            } catch (error) {
+              toast({
+                title: "Export Failed",
+                description: "Failed to generate report. Please try again.",
+                variant: "destructive",
+              });
+            }
           }}>
             <Download className="h-4 w-4 mr-2" />
             Export Report

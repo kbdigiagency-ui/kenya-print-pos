@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Receipt, Eye, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Receipt, Eye, Edit, Trash2, Search, Download, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportToCSV } from "@/utils/fileExport";
 
 interface Sale {
   id: string;
@@ -260,7 +261,32 @@ const Sales = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => {
+            try {
+              const csvData = sales.map(sale => ({
+                ID: sale.id,
+                Date: sale.date,
+                Client: sale.client,
+                Items: sale.items,
+                Amount: sale.amount,
+                Status: sale.status
+              }));
+              exportToCSV(csvData, `sales-data-${new Date().toISOString().split('T')[0]}`);
+              toast({
+                title: "Export Complete",
+                description: `Exported ${sales.length} sales records to CSV`,
+              });
+            } catch (error) {
+              toast({
+                title: "Export Failed",
+                description: "Failed to export sales data.",
+                variant: "destructive",
+              });
+            }
+          }}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Sales
+          </Button>
                       <Button 
                         variant="ghost" 
                         size="sm"
