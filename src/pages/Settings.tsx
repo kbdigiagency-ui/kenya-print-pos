@@ -80,24 +80,51 @@ const Settings = () => {
   }, [systemSettings]);
 
   const handleSaveCompany = () => {
-    toast({
-      title: "Company Settings Saved",
-      description: "Your company information has been updated successfully.",
-    });
+    try {
+      localStorage.setItem('settings.company', JSON.stringify(companySettings));
+      toast({
+        title: "Company Settings Saved",
+        description: "Your company information has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save company settings. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveUser = () => {
-    toast({
-      title: "User Settings Saved", 
-      description: "Your profile settings have been updated successfully.",
-    });
+    try {
+      localStorage.setItem('settings.user', JSON.stringify(userSettings));
+      toast({
+        title: "User Settings Saved", 
+        description: "Your profile settings have been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save user settings. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveSystem = () => {
-    toast({
-      title: "System Settings Saved",
-      description: "System configuration has been updated successfully.",
-    });
+    try {
+      localStorage.setItem('settings.system', JSON.stringify(systemSettings));
+      toast({
+        title: "System Settings Saved",
+        description: "System configuration has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save system settings. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleExportData = () => {
