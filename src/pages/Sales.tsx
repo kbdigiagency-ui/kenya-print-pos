@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,19 @@ interface Sale {
 }
 
 const Sales = () => {
-  const [sales, setSales] = useState<Sale[]>([
-    { id: "S001", date: "2024-01-15", client: "Safaricom Ltd", items: "Business Cards, Letterheads", amount: 12500, status: "completed" },
-    { id: "S002", date: "2024-01-15", client: "Equity Bank", items: "Branding Package", amount: 8750, status: "pending" },
-    { id: "S003", date: "2024-01-14", client: "Kenya Power", items: "Banner Printing", amount: 15200, status: "completed" },
-    { id: "S004", date: "2024-01-14", client: "Co-op Bank", items: "Flyer Design & Print", amount: 6800, status: "completed" },
-    { id: "S005", date: "2024-01-13", client: "KCB Bank", items: "Roll-up Banners", amount: 9500, status: "pending" },
-  ]);
+  const [sales, setSales] = useState<Sale[]>(() => {
+    try {
+      const stored = localStorage.getItem('app_sales');
+      if (stored) return JSON.parse(stored) as Sale[];
+    } catch {}
+    return [
+      { id: "S001", date: "2024-01-15", client: "Safaricom Ltd", items: "Business Cards, Letterheads", amount: 12500, status: "completed" },
+      { id: "S002", date: "2024-01-15", client: "Equity Bank", items: "Branding Package", amount: 8750, status: "pending" },
+      { id: "S003", date: "2024-01-14", client: "Kenya Power", items: "Banner Printing", amount: 15200, status: "completed" },
+      { id: "S004", date: "2024-01-14", client: "Co-op Bank", items: "Flyer Design & Print", amount: 6800, status: "completed" },
+      { id: "S005", date: "2024-01-13", client: "KCB Bank", items: "Roll-up Banners", amount: 9500, status: "pending" },
+    ];
+  });
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +53,10 @@ const Sales = () => {
 
   const { toast } = useToast();
 
+  // Persist sales to localStorage
+  useEffect(() => {
+    localStorage.setItem('app_sales', JSON.stringify(sales));
+  }, [sales]);
   const filteredSales = sales.filter(sale =>
     sale.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.items.toLowerCase().includes(searchTerm.toLowerCase()) ||

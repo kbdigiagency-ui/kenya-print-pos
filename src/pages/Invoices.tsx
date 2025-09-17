@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,53 +36,59 @@ interface Document {
 }
 
 const Invoices = () => {
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: "Q001",
-      type: "quotation",
-      clientName: "Safaricom Ltd",
-      clientEmail: "procurement@safaricom.co.ke",
-      date: "2024-01-15",
-      items: [
-        { description: "Business Card Design & Print (1000 pcs)", quantity: 1, rate: 8500, amount: 8500 },
-        { description: "Letterhead Design & Print (500 pcs)", quantity: 1, rate: 4000, amount: 4000 }
-      ],
-      subtotal: 12500,
-      tax: 2000,
-      total: 14500,
-      status: "sent",
-      notes: "Premium business cards with embossing"
-    },
-    {
-      id: "INV001",
-      type: "invoice", 
-      clientName: "Equity Bank",
-      clientEmail: "finance@equity.co.ke",
-      date: "2024-01-14",
-      dueDate: "2024-01-28",
-      items: [
-        { description: "Complete Branding Package", quantity: 1, rate: 25000, amount: 25000 }
-      ],
-      subtotal: 25000,
-      tax: 4000,
-      total: 29000,
-      status: "sent"
-    },
-    {
-      id: "REC001",
-      type: "receipt",
-      clientName: "Kenya Power",
-      clientEmail: "payments@kenyapower.co.ke", 
-      date: "2024-01-13",
-      items: [
-        { description: "Banner Printing (5m x 2m)", quantity: 2, rate: 7600, amount: 15200 }
-      ],
-      subtotal: 15200,
-      tax: 2432,
-      total: 17632,
-      status: "paid"
-    }
-  ]);
+  const [documents, setDocuments] = useState<Document[]>(() => {
+    try {
+      const stored = localStorage.getItem('app_documents');
+      if (stored) return JSON.parse(stored) as Document[];
+    } catch {}
+    return [
+      {
+        id: "Q001",
+        type: "quotation",
+        clientName: "Safaricom Ltd",
+        clientEmail: "procurement@safaricom.co.ke",
+        date: "2024-01-15",
+        items: [
+          { description: "Business Card Design & Print (1000 pcs)", quantity: 1, rate: 8500, amount: 8500 },
+          { description: "Letterhead Design & Print (500 pcs)", quantity: 1, rate: 4000, amount: 4000 }
+        ],
+        subtotal: 12500,
+        tax: 2000,
+        total: 14500,
+        status: "sent",
+        notes: "Premium business cards with embossing"
+      },
+      {
+        id: "INV001",
+        type: "invoice", 
+        clientName: "Equity Bank",
+        clientEmail: "finance@equity.co.ke",
+        date: "2024-01-14",
+        dueDate: "2024-01-28",
+        items: [
+          { description: "Complete Branding Package", quantity: 1, rate: 25000, amount: 25000 }
+        ],
+        subtotal: 25000,
+        tax: 4000,
+        total: 29000,
+        status: "sent"
+      },
+      {
+        id: "REC001",
+        type: "receipt",
+        clientName: "Kenya Power",
+        clientEmail: "payments@kenyapower.co.ke", 
+        date: "2024-01-13",
+        items: [
+          { description: "Banner Printing (5m x 2m)", quantity: 2, rate: 7600, amount: 15200 }
+        ],
+        subtotal: 15200,
+        tax: 2432,
+        total: 17632,
+        status: "paid"
+      }
+    ];
+  });
 
   const [activeTab, setActiveTab] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -96,6 +102,11 @@ const Invoices = () => {
   });
 
   const { toast } = useToast();
+
+  // Persist documents to localStorage
+  useEffect(() => {
+    localStorage.setItem('app_documents', JSON.stringify(documents));
+  }, [documents]);
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = 

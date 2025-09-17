@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, CreditCard, Search, TrendingDown, Calendar, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, CreditCard, Search, Download, TrendingDown, Calendar, Eye, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
+import { exportToCSV } from "@/utils/fileExport";
 interface Expense {
   id: string;
   date: string;
@@ -35,13 +35,19 @@ const expenseCategories = [
 ];
 
 const Expenses = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: "E001", date: "2024-01-15", category: "Ink & Toner", description: "Canon ink cartridges", amount: 4500, supplier: "Art Supplies Kenya", paymentMethod: "M-Pesa" },
-    { id: "E002", date: "2024-01-15", category: "Paper & Substrates", description: "A4 paper (10 reams)", amount: 2800, supplier: "Stationers Ltd", paymentMethod: "Cash" },
-    { id: "E003", date: "2024-01-14", category: "Rent & Utilities", description: "Office rent - January", amount: 35000, paymentMethod: "Bank Transfer" },
-    { id: "E004", date: "2024-01-14", category: "Equipment Maintenance", description: "Printer servicing", amount: 6000, supplier: "Tech Solutions", paymentMethod: "Cash" },
-    { id: "E005", date: "2024-01-13", category: "Transport & Delivery", description: "Client delivery - Westlands", amount: 800, paymentMethod: "Cash" },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    try {
+      const stored = localStorage.getItem('app_expenses');
+      if (stored) return JSON.parse(stored) as Expense[];
+    } catch {}
+    return [
+      { id: "E001", date: "2024-01-15", category: "Ink & Toner", description: "Canon ink cartridges", amount: 4500, supplier: "Art Supplies Kenya", paymentMethod: "M-Pesa" },
+      { id: "E002", date: "2024-01-15", category: "Paper & Substrates", description: "A4 paper (10 reams)", amount: 2800, supplier: "Stationers Ltd", paymentMethod: "Cash" },
+      { id: "E003", date: "2024-01-14", category: "Rent & Utilities", description: "Office rent - January", amount: 35000, paymentMethod: "Bank Transfer" },
+      { id: "E004", date: "2024-01-14", category: "Equipment Maintenance", description: "Printer servicing", amount: 6000, supplier: "Tech Solutions", paymentMethod: "Cash" },
+      { id: "E005", date: "2024-01-13", category: "Transport & Delivery", description: "Client delivery - Westlands", amount: 800, paymentMethod: "Cash" },
+    ];
+  });
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +61,10 @@ const Expenses = () => {
 
   const { toast } = useToast();
 
+  // Persist expenses to localStorage
+  useEffect(() => {
+    localStorage.setItem('app_expenses', JSON.stringify(expenses));
+  }, [expenses]);
   const filteredExpenses = expenses.filter(expense =>
     expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     expense.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -264,14 +274,47 @@ const Expenses = () => {
                 <CardTitle>Expense Records</CardTitle>
                 <CardDescription>View and manage all business expenses</CardDescription>
               </div>
-              <div className="relative w-72">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search expenses..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex items-center gap-3">
+                <div className="relative w-72">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Search expenses..."
+                    className="pl-9"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    try {
+                      const csvData = expenses.map((e) => ({
+                        ID: e.id,
+                        Date: e.date,
+                        Category: e.category,
+                        Description: e.description,
+                        Supplier: e.supplier || '',
+                        Amount: e.amount,
+                        Payment: e.paymentMethod,
+                      }));
+                      exportToCSV(csvData, `expenses-${new Date().toISOString().split('T')[0]}`);
+                      toast({
+                        title: "Export Complete",
+                        description: `Exported ${expenses.length} expenses to CSV`,
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Export Failed",
+                        description: "Failed to export expenses.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
               </div>
             </div>
           </CardHeader>

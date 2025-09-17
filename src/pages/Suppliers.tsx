@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Truck, Eye, Edit, Trash2, Search, Phone, Mail, Package, AlertCircle } from "lucide-react";
+import { Plus, Truck, Eye, Edit, Trash2, Search, Phone, Mail, Package, AlertCircle, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportToCSV } from "@/utils/fileExport";
 
 interface Supplier {
   id: string;
@@ -39,64 +40,70 @@ const supplierCategories = [
 ];
 
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([
-    {
-      id: "SUP001",
-      name: "Art Supplies Kenya Ltd",
-      contactPerson: "David Maina",
-      email: "david@artsupplies.co.ke",
-      phone: "+254722555666",
-      address: "Industrial Area, Nairobi",
-      category: "Ink & Toner Suppliers",
-      paymentTerms: "Net 30",
-      totalPaid: 125000,
-      outstanding: 15000,
-      lastPayment: "2024-01-10",
-      status: "active"
-    },
-    {
-      id: "SUP002", 
-      name: "Nairobi Stationers Ltd",
-      contactPerson: "Jane Wambui",
-      email: "j.wambui@stationers.co.ke",
-      phone: "+254733444555",
-      address: "CBD, Nairobi",
-      category: "Paper & Media",
-      paymentTerms: "Net 15",
-      totalPaid: 87500,
-      outstanding: 8750,
-      lastPayment: "2024-01-12",
-      status: "active"
-    },
-    {
-      id: "SUP003",
-      name: "Digital Print Solutions",
-      contactPerson: "Michael Ochieng",
-      email: "m.ochieng@digitalsolutions.co.ke", 
-      phone: "+254711222333",
-      address: "Westlands, Nairobi",
-      category: "Equipment Suppliers",
-      paymentTerms: "Net 45",
-      totalPaid: 350000,
-      outstanding: 25000,
-      lastPayment: "2024-01-08",
-      status: "active"
-    },
-    {
-      id: "SUP004",
-      name: "Creative Arts Suppliers",
-      contactPerson: "Sarah Njeri",
-      email: "sarah@creative-arts.co.ke",
-      phone: "+254799111222", 
-      address: "Kilimani, Nairobi",
-      category: "Art & Design Materials",
-      paymentTerms: "Net 30",
-      totalPaid: 45600,
-      outstanding: 0,
-      lastPayment: "2024-01-15",
-      status: "active"
-    }
-  ]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
+    try {
+      const stored = localStorage.getItem('app_suppliers');
+      if (stored) return JSON.parse(stored) as Supplier[];
+    } catch {}
+    return [
+      {
+        id: "SUP001",
+        name: "Art Supplies Kenya Ltd",
+        contactPerson: "David Maina",
+        email: "david@artsupplies.co.ke",
+        phone: "+254722555666",
+        address: "Industrial Area, Nairobi",
+        category: "Ink & Toner Suppliers",
+        paymentTerms: "Net 30",
+        totalPaid: 125000,
+        outstanding: 15000,
+        lastPayment: "2024-01-10",
+        status: "active"
+      },
+      {
+        id: "SUP002", 
+        name: "Nairobi Stationers Ltd",
+        contactPerson: "Jane Wambui",
+        email: "j.wambui@stationers.co.ke",
+        phone: "+254733444555",
+        address: "CBD, Nairobi",
+        category: "Paper & Media",
+        paymentTerms: "Net 15",
+        totalPaid: 87500,
+        outstanding: 8750,
+        lastPayment: "2024-01-12",
+        status: "active"
+      },
+      {
+        id: "SUP003",
+        name: "Digital Print Solutions",
+        contactPerson: "Michael Ochieng",
+        email: "m.ochieng@digitalsolutions.co.ke", 
+        phone: "+254711222333",
+        address: "Westlands, Nairobi",
+        category: "Equipment Suppliers",
+        paymentTerms: "Net 45",
+        totalPaid: 350000,
+        outstanding: 25000,
+        lastPayment: "2024-01-08",
+        status: "active"
+      },
+      {
+        id: "SUP004",
+        name: "Creative Arts Suppliers",
+        contactPerson: "Sarah Njeri",
+        email: "sarah@creative-arts.co.ke",
+        phone: "+254799111222", 
+        address: "Kilimani, Nairobi",
+        category: "Art & Design Materials",
+        paymentTerms: "Net 30",
+        totalPaid: 45600,
+        outstanding: 0,
+        lastPayment: "2024-01-15",
+        status: "active"
+      }
+    ];
+  });
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,6 +119,11 @@ const Suppliers = () => {
   });
 
   const { toast } = useToast();
+
+  // Persist suppliers to localStorage
+  useEffect(() => {
+    localStorage.setItem('app_suppliers', JSON.stringify(suppliers));
+  }, [suppliers]);
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -332,14 +344,51 @@ const Suppliers = () => {
               <CardTitle>Supplier Database</CardTitle>
               <CardDescription>Manage supplier information and track payment history</CardDescription>
             </div>
-            <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search suppliers..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-3">
+              <div className="relative w-72">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search suppliers..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  try {
+                    const csvData = suppliers.map((s) => ({
+                      ID: s.id,
+                      Name: s.name,
+                      Contact: s.contactPerson,
+                      Email: s.email,
+                      Phone: s.phone,
+                      Address: s.address,
+                      Category: s.category,
+                      PaymentTerms: s.paymentTerms,
+                      TotalPaid: s.totalPaid,
+                      Outstanding: s.outstanding,
+                      Status: s.status,
+                    }));
+                    exportToCSV(csvData, `suppliers-${new Date().toISOString().split('T')[0]}`);
+                    toast({
+                      title: "Export Complete",
+                      description: `Exported ${suppliers.length} suppliers to CSV`,
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Export Failed",
+                      description: "Failed to export suppliers.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
             </div>
           </div>
         </CardHeader>

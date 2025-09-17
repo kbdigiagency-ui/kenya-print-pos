@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,42 +13,71 @@ import { useFileImport } from "@/hooks/useFileImport";
 import { Settings as SettingsIcon, Building2, User, Database, Mail, Lock, Bell } from "lucide-react";
 
 const Settings = () => {
-  const [companySettings, setCompanySettings] = useState({
-    name: "KB Digital Agency LTD",
-    email: "kbdigiagency@gmail.com",
-    phone: "+254722123456",
-    address: "Nairobi, Kenya",
-    website: "www.kbdigitalagency.co.ke",
-    taxNumber: "KRA-PIN-123456789",
-    currency: "KES",
-    logo: "",
+  const [companySettings, setCompanySettings] = useState(() => {
+    try {
+      const stored = localStorage.getItem('settings.company');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      name: "KB Digital Agency LTD",
+      email: "kbdigiagency@gmail.com",
+      phone: "+254722123456",
+      address: "Nairobi, Kenya",
+      website: "www.kbdigitalagency.co.ke",
+      taxNumber: "KRA-PIN-123456789",
+      currency: "KES",
+      logo: "",
+    };
   });
 
-  const [userSettings, setUserSettings] = useState({
-    name: "Admin User",
-    email: "kbdigiagency@gmail.com",
-    phone: "+254722123456",
-    role: "Administrator",
-    notifications: {
-      email: true,
-      sms: false,
-      dashboard: true,
-      reports: true,
-    }
+  const [userSettings, setUserSettings] = useState(() => {
+    try {
+      const stored = localStorage.getItem('settings.user');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      name: "Admin User",
+      email: "kbdigiagency@gmail.com",
+      phone: "+254722123456",
+      role: "Administrator",
+      notifications: {
+        email: true,
+        sms: false,
+        dashboard: true,
+        reports: true,
+      }
+    };
   });
 
-  const [systemSettings, setSystemSettings] = useState({
-    autoBackup: true,
-    backupFrequency: "daily",
-    dataRetention: "12",
-    defaultTax: "16",
-    invoicePrefix: "INV",
-    quotationPrefix: "Q",
-    receiptPrefix: "REC",
+  const [systemSettings, setSystemSettings] = useState(() => {
+    try {
+      const stored = localStorage.getItem('settings.system');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      autoBackup: true,
+      backupFrequency: "daily",
+      dataRetention: "12",
+      defaultTax: "16",
+      invoicePrefix: "INV",
+      quotationPrefix: "Q",
+      receiptPrefix: "REC",
+    };
   });
 
   const { toast } = useToast();
   const { importJSON, isImporting } = useFileImport();
+
+  // Persist settings to localStorage
+  useEffect(() => {
+    localStorage.setItem('settings.company', JSON.stringify(companySettings));
+  }, [companySettings]);
+  useEffect(() => {
+    localStorage.setItem('settings.user', JSON.stringify(userSettings));
+  }, [userSettings]);
+  useEffect(() => {
+    localStorage.setItem('settings.system', JSON.stringify(systemSettings));
+  }, [systemSettings]);
 
   const handleSaveCompany = () => {
     toast({
