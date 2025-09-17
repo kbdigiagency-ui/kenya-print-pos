@@ -261,32 +261,36 @@ const Sales = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-          <Button variant="outline" onClick={() => {
-            try {
-              const csvData = sales.map(sale => ({
-                ID: sale.id,
-                Date: sale.date,
-                Client: sale.client,
-                Items: sale.items,
-                Amount: sale.amount,
-                Status: sale.status
-              }));
-              exportToCSV(csvData, `sales-data-${new Date().toISOString().split('T')[0]}`);
-              toast({
-                title: "Export Complete",
-                description: `Exported ${sales.length} sales records to CSV`,
-              });
-            } catch (error) {
-              toast({
-                title: "Export Failed",
-                description: "Failed to export sales data.",
-                variant: "destructive",
-              });
-            }
-          }}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Sales
-          </Button>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          try {
+                            const csvData = sales.map(sale => ({
+                              ID: sale.id,
+                              Date: sale.date,
+                              Client: sale.client,
+                              Items: sale.items,
+                              Amount: sale.amount,
+                              Status: sale.status
+                            }));
+                            exportToCSV(csvData, `sales-data-${new Date().toISOString().split('T')[0]}`);
+                            toast({
+                              title: "Export Complete",
+                              description: `Exported ${sales.length} sales records to CSV`,
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Export Failed",
+                              description: "Failed to export sales data.",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
                       <Button 
                         variant="ghost" 
                         size="sm"
